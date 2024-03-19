@@ -35,7 +35,7 @@ from idaes.core.util import to_json, from_json, StoreSpec
 import idaes.core.util.scaling as iscale
 from idaes.core.util.model_diagnostics import DegeneracyHunter
 
-import finitevolume
+# import finitevolume
 from idaes.core.solvers.homotopy import homotopy
 from idaes.core.initialization.block_triangularization import (
     BlockTriangularizationInitializer,
