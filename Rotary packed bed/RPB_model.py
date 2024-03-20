@@ -43,7 +43,7 @@ from idaes.core.initialization.block_triangularization import (
 
 
 # Creating pyomo model
-def RPB_model(mode, gas_flow_direction=1):
+def RPB_model(mode, gas_flow_direction=1, has_pressure_drop=True):
     m = ConcreteModel()
 
     z_bounds = (0, 1)
@@ -1029,44 +1029,58 @@ def RPB_model(mode, gas_flow_direction=1):
             return m.dTsdo[z, o] == 0
         else:
             return Constraint.Skip
-
-    @m.Constraint(m.z, m.o, doc="Ergun Equation [bar/m]")
-    def pde_Ergun(m, z, o):
-        Pa_to_bar = 1e-5 * units.bar / units.Pa
-        if gas_flow_direction == 1:
-            if z > 0:
-                return m.dPdz[z, o] / m.L == m.R_dP * -(
-                    Pa_to_bar
-                    * (150 * m.mu_mix[z, o] * ((1 - m.eb) ** 2) / (m.eb**3))
-                    / m.dp**2
-                    * m.vel[z, o]
-                    + Pa_to_bar
-                    * 1.75
-                    * (1 - m.eb)
-                    / m.eb**3
-                    * m.rhog[z, o]
-                    / m.dp
-                    * m.vel[z, o] ** 2
-                )
-            else:
-                return Constraint.Skip
-        elif gas_flow_direction == -1:
-            if z < 1:
-                return -m.dPdz[z, o] / m.L == m.R_dP * -(
-                    Pa_to_bar
-                    * (150 * m.mu_mix[z, o] * ((1 - m.eb) ** 2) / (m.eb**3))
-                    / m.dp**2
-                    * m.vel[z, o]
-                    + Pa_to_bar
-                    * 1.75
-                    * (1 - m.eb)
-                    / m.eb**3
-                    * m.rhog[z, o]
-                    / m.dp
-                    * m.vel[z, o] ** 2
-                )
-            else:
-                return Constraint.Skip
+    if has_pressure_drop:
+        @m.Constraint(m.z, m.o, doc="Ergun Equation [bar/m]")
+        def pde_Ergun(m, z, o):
+            Pa_to_bar = 1e-5 * units.bar / units.Pa
+            if gas_flow_direction == 1:
+                if z > 0:
+                    return m.dPdz[z, o] / m.L == m.R_dP * -(
+                        Pa_to_bar
+                        * (150 * m.mu_mix[z, o] * ((1 - m.eb) ** 2) / (m.eb**3))
+                        / m.dp**2
+                        * m.vel[z, o]
+                        + Pa_to_bar
+                        * 1.75
+                        * (1 - m.eb)
+                        / m.eb**3
+                        * m.rhog[z, o]
+                        / m.dp
+                        * m.vel[z, o] ** 2
+                    )
+                else:
+                    return Constraint.Skip
+            elif gas_flow_direction == -1:
+                if z < 1:
+                    return -m.dPdz[z, o] / m.L == m.R_dP * -(
+                        Pa_to_bar
+                        * (150 * m.mu_mix[z, o] * ((1 - m.eb) ** 2) / (m.eb**3))
+                        / m.dp**2
+                        * m.vel[z, o]
+                        + Pa_to_bar
+                        * 1.75
+                        * (1 - m.eb)
+                        / m.eb**3
+                        * m.rhog[z, o]
+                        / m.dp
+                        * m.vel[z, o] ** 2
+                    )
+                else:
+                    return Constraint.Skip
+    else:
+        @m.Constraint(m.z, m.o, doc="Ergun Equation [bar/m]")
+        def pde_Ergun(m, z, o):
+            Pa_to_bar = 1e-5 * units.bar / units.Pa
+            if gas_flow_direction == 1:
+                if z > 0:
+                    return m.dPdz[z, o] == 0
+                else:
+                    return Constraint.Skip
+            elif gas_flow_direction == -1:
+                if z < 1:
+                    return -m.dPdz[z, o] == 0
+                else:
+                    return Constraint.Skip
 
     @m.Constraint(m.z, m.o, doc="mole fraction summation")
     def mole_frac_sum(m, z, o):
