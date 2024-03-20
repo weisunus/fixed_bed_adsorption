@@ -2035,15 +2035,15 @@ def single_section_init2(blk):
     )
 
 
-def full_model_creation(lean_temp_connection=True, configuration="co-current"):
+def full_model_creation(lean_temp_connection=True, configuration="co-current", has_pressure_drop=True):
     RPB = ConcreteModel()
 
     if configuration == "co-current":
-        RPB.ads = RPB_model(mode="adsorption", gas_flow_direction=1)
-        RPB.des = RPB_model(mode="desorption", gas_flow_direction=1)
+        RPB.ads = RPB_model(mode="adsorption", gas_flow_direction=1, has_pressure_drop)
+        RPB.des = RPB_model(mode="desorption", gas_flow_direction=1, has_pressure_drop)
     elif configuration == "counter-current":
-        RPB.ads = RPB_model(mode="adsorption", gas_flow_direction=1)
-        RPB.des = RPB_model(mode="desorption", gas_flow_direction=-1)
+        RPB.ads = RPB_model(mode="adsorption", gas_flow_direction=1, has_pressure_drop)
+        RPB.des = RPB_model(mode="desorption", gas_flow_direction=-1, has_pressure_drop)
 
     # fix BCs
     # RPB.ads.P_in.fix(1.1)
