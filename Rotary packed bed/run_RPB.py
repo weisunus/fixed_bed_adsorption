@@ -5,7 +5,7 @@ import numpy as np
 
 if __name__ == '__main__':
     
-    RPB = RPB_model.full_model_creation()
+    RPB = RPB_model.full_model_creation(has_pressure_drop=False)
     
 
     y_in = {'CO2': 0.002201,
