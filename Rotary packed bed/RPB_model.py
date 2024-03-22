@@ -2093,7 +2093,7 @@ def full_model_creation(lean_temp_connection=True, configuration="co-current", h
     @RPB.Constraint(RPB.ads.z)
     def lean_loading_constraint(RPB, z):
         if 0 < z < 1:
-            return RPB.ads.qCO2[z, 0] == RPB.des.qCO2[z, 1]
+            return RPB.interface_scale * (RPB.ads.qCO2[z, 0] - RPB.des.qCO2[z, 1]) == 0
         else:
             return Constraint.Skip
 
@@ -2102,7 +2102,7 @@ def full_model_creation(lean_temp_connection=True, configuration="co-current", h
         @RPB.Constraint(RPB.ads.z)
         def lean_temp_constraint(RPB, z):
             if 0 < z < 1:
-                return RPB.ads.Ts[z, 0] == RPB.des.Ts[z, 1]
+                return RPB.interface_scale * (RPB.ads.Ts[z, 0] - RPB.des.Ts[z, 1]) == 0
             else:
                 return Constraint.Skip
 
@@ -2696,3 +2696,12 @@ def full_contactor_plotting(blk, save_option=False):
         fig.savefig("GasVel_des.png", dpi=300)
 
     plt.show()
+
+def solve_model(blk):
+    solver = SolverFactory("ipopt")
+    solver.options = {
+        "max_iter": 500,
+        "bound_push": 1e-22,
+        "halt_on_ampl_error": "yes",
+    }
+    solver.solve(blk, tee=True).write()

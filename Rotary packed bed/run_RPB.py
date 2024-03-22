@@ -39,7 +39,7 @@ if __name__ == '__main__':
     #     from_json(RPB_model, fname="initialized_RPB_1.json")
     # except:
     #     RPB_model.init_routine_1(RPB)
-    from_json(RPB_model, fname="base case solution 012424/base case solution 012424.json")
+    from_json(RPB_model, fname="opt solution 012424.json.gz")
     RPB_model.solve_model(RPB)
     Results = RPB_model.report(RPB)
     Results_Inlet_Loading = RPB_model.report_loading(RPB)
