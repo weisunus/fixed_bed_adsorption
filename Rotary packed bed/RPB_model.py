@@ -2065,17 +2065,19 @@ def full_model_creation(lean_temp_connection=True, configuration="co-current", h
             RPB.des.Ts[z, 0].unfix()
 
     # add equality constraint equating inlet desorption loading to outlet adsorption loading. Same for temperature.
+    RPB.interface_scale = Param(initialize=1e-4,
+                                mutable=True)
     @RPB.Constraint(RPB.des.z)
     def rich_loading_constraint(RPB, z):
         if 0 < z < 1:
-            return RPB.des.qCO2[z, 0] == RPB.ads.qCO2[z, 1]
+            return RPB.interface_scale * (RPB.des.qCO2[z, 0] - RPB.ads.qCO2[z, 1]) == 0
         else:
             return Constraint.Skip
 
     @RPB.Constraint(RPB.des.z)
     def rich_temp_constraint(RPB, z):
         if 0 < z < 1:
-            return RPB.des.Ts[z, 0] == RPB.ads.Ts[z, 1]
+            return RPB.interface_scale * (RPB.des.Ts[z, 0] - RPB.ads.Ts[z, 1]) == 0
         else:
             return Constraint.Skip
 
