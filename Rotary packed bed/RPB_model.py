@@ -2872,7 +2872,7 @@ def solve_model(blk, optarg=None):
             "warm_start_init_point": "yes",
             "bound_push": 1e-22,
             "halt_on_ampl_error": "yes",
-            "tol": 1e-4
+            "tol": 1e-6
         }
     else:
         solver.options = optarg
