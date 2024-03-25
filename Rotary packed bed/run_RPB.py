@@ -2,10 +2,25 @@ import RPB_model
 import pandas as pd
 from idaes.core.util import to_json, from_json
 import numpy as np
+import pyomo.environ as pyo
+
+def Remove_Pressure_Drop(b):
+    # b.ads.R_dP.fix(0.001)
+    # b.des.R_dP.fix(0.001)
+    
+    b.ads.F_in.fix()
+    b.ads.P_in.fix()
+    b.ads.P_out.unfix()
+    
+    b.des.F_in.fix()
+    b.des.P_in.fix()
+    b.des.P_out.unfix()
 
 if __name__ == '__main__':
     
-    RPB = RPB_model.full_model_creation(has_pressure_drop=False)
+    has_pressure_drop = True
+    RPB = RPB_model.full_model_creation(lean_temp_connection=True,
+                                        configuration='counter-current')
     
 
     y_in = {'CO2': 0.002201,
@@ -19,45 +34,42 @@ if __name__ == '__main__':
             'N2': 0.8768,
             'H2O': 0.0841}
     
-    RPB.ads.w_rpm.fix(1)
-
-    # RPB.ads.P_in.fix(1.03)
+    # @RPB.Expression()
+    # def obj(RPB):
+    #     return RPB.energy_requirement
+    # RPB.objective = pyo.Objective(expr=RPB.obj)
     
-    # RPB.ads.D.fix(10)
+    # RPB.ads.P_in.bounds = (0.99, 1.5)
+    RPB.ads.P_in.setub(1.5)
+    RPB.ads.P_in.setlb(0.99)
+    # RPB.ads.P.bounds = (0.99, 1.5)
+    RPB.ads.P.setub(1.5)
+    # RPB.ads.P.setlb(0.99)
     
-    # RPB.ads.L.fix(1.8)
+    if not has_pressure_drop:
+        Remove_Pressure_Drop(RPB)
+        
+    homotopy_points = np.linspace(0.2, 1, 5)
+    # RPB_model.init_routine_1(RPB)#, homotopy_points)
 
-    # for comp in y_in.keys():
-    #     RPB.ads.y_in[comp].fix(y_in[comp])
-        
-    # RPB.ads.F_in.fix(5000)
-        
-    # homotopy_points = np.linspace(0.2, 1, 5)
-    # RPB_model.init_routine_1(RPB, homotopy_points)
-    # try:
-    #     # from_json(RPB, fname="base case solution 012424/base case solution 012424.json")
-    #     from_json(RPB_model, fname="initialized_RPB_1.json")
-    # except:
-    #     RPB_model.init_routine_1(RPB)
-    from_json(RPB_model, fname="opt solution 012424.json.gz")
-    RPB_model.solve_model(RPB)
+    from_json(RPB, fname="default_initialization_0_001_R_dP.json.gz", gz=True)
+    
+
+    
+    RPB_model.solve_model(RPB,)# optarg={'max_iter': 0})
     Results = RPB_model.report(RPB)
-    Results_Inlet_Loading = RPB_model.report_loading(RPB)
+    # Results_Inlet_Loading = RPB_model.report_loading(RPB)
     
-    # Results = pd.DataFrame()
-    # Results.at[0,'Pressure In'] = pyo.value(RPB.ads.P_in)
-    
-    
-    # RPB.ads.P_in.fix(1.05)
-    
-    # RPB_model.solve_model(RPB)
-    
-    # p_in = [1.03, 1.04]
-    # for P in p_in:
-    #     RPB.ads.P_in.fix(P)
-    #     RPB_model.solve_model(RPB)
+    co2_comp_list = np.linspace(0.04, 0.004, 10)
+    n2_comp_list = np.linspace(0.87, 0.94, 10)
+    for i in range(len(co2_comp_list)):
+        print(i)
+        RPB.ads.y_in["CO2"].fix(co2_comp_list[i])
+        RPB.ads.y_in["N2"].fix(n2_comp_list[i])
+        RPB_model.solve_model(RPB)
         
-    #     Pressure_res = pd.DataFrame()
-    #     Pressure_res.at[P, 'Energy Requirement (MJ/kg CO2)'] = pyo.value(RPB.energy_requirement)
+    RPB_model.add_ads_inlet_comp_constraint(RPB.ads)
+    
+
         
     
