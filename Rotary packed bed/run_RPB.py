@@ -21,6 +21,7 @@ if __name__ == '__main__':
     has_pressure_drop = True
     RPB = RPB_model.full_model_creation(lean_temp_connection=True,
                                         configuration='counter-current')
+    RPB_model.add_ads_inlet_comp_constraint(RPB.ads)
     
 
     y_in = {'CO2': 0.002201,
@@ -33,6 +34,7 @@ if __name__ == '__main__':
     y_in = {'CO2': 0.0391,
             'N2': 0.8768,
             'H2O': 0.0841}
+    
     
     # @RPB.Expression()
     # def obj(RPB):
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     homotopy_points = np.linspace(0.2, 1, 5)
     # RPB_model.init_routine_1(RPB)#, homotopy_points)
 
-    from_json(RPB, fname="default_initialization_0_001_R_dP.json.gz", gz=True)
+    from_json(RPB, fname="low_co2_initialization_no_dP.json.gz", gz=True)
     
 
     
@@ -60,15 +62,15 @@ if __name__ == '__main__':
     Results = RPB_model.report(RPB)
     # Results_Inlet_Loading = RPB_model.report_loading(RPB)
     
-    co2_comp_list = np.linspace(0.04, 0.004, 10)
-    n2_comp_list = np.linspace(0.87, 0.94, 10)
-    for i in range(len(co2_comp_list)):
-        print(i)
-        RPB.ads.y_in["CO2"].fix(co2_comp_list[i])
-        RPB.ads.y_in["N2"].fix(n2_comp_list[i])
-        RPB_model.solve_model(RPB)
+    # co2_comp_list = np.linspace(0.04, 0.004, 10)
+    # n2_comp_list = np.linspace(0.87, 0.94, 10)
+    # for i in range(len(co2_comp_list)):
+    #     print(i)
+    #     RPB.ads.y_in["CO2"].fix(co2_comp_list[i])
+    #     RPB.ads.y_in["N2"].fix(n2_comp_list[i])
+    #     RPB_model.solve_model(RPB)
         
-    RPB_model.add_ads_inlet_comp_constraint(RPB.ads)
+    
     
 
         

@@ -2730,8 +2730,8 @@ def scale_model(m, gas_flow_direction, mode):
         for o in m.o:
             iscale.set_scaling_factor(m.vel[z, o], 10)
             iscale.set_scaling_factor(m.qCO2[z, o], 10)
-            iscale.set_scaling_factor(m.Tg[z, o], 1e-2)
-            iscale.set_scaling_factor(m.Ts[z, o], 1e0)
+            iscale.set_scaling_factor(m.Tg[z, o], 1e-3)
+            iscale.set_scaling_factor(m.Ts[z, o], 1e-2)
             iscale.set_scaling_factor(m.P[z, o], 10)
             iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 25)
             iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 25)
@@ -2765,7 +2765,7 @@ def scale_model(m, gas_flow_direction, mode):
                 iscale.set_scaling_factor(m.Q_gs[z, o], 0.01)
                 iscale.set_scaling_factor(m.Q_delH[z, o], 0.01)
                 iscale.set_scaling_factor(m.Q_delH_eq[z, o], 0.01)
-                iscale.set_scaling_factor(m.Rs_CO2[z, o], 0.5)
+                iscale.set_scaling_factor(m.Rs_CO2[z, o], 1e2)
                 iscale.set_scaling_factor(m.Rs_CO2_eq[z, o], 1)
 
             if gas_flow_direction == 1:
@@ -2872,7 +2872,7 @@ def solve_model(blk, optarg=None):
             "warm_start_init_point": "yes",
             "bound_push": 1e-22,
             "halt_on_ampl_error": "yes",
-            "tol": 1e-6
+            "tol": 1e-4
         }
     else:
         solver.options = optarg
