@@ -17,6 +17,24 @@ def Remove_Pressure_Drop(b):
     b.des.F_in.fix()
     b.des.P_in.fix()
     b.des.P_out.unfix()
+    
+def set_polishing_bounds(sections):
+    for section in sections:
+        section.P_in.setub(10)
+        section.L.setub(40)
+        if str(section) == 'ads':
+            section.Tx.setlb(298)
+            section.Tx.setub(368)
+        elif str(section) == 'des':
+            section.Tx.setlb(373)
+            section.Tx.setub(433)
+        for z in section.z:
+            for o in section.o:
+                section.dPdz[z,o].setub(5)
+                section.dPdz[z,o].setlb(-5)
+                section.C_tot.setub(250)
+                section.P[z,o].setub(10)
+                section.vel[z,o].setub(15)
 
 if __name__ == '__main__':
     
