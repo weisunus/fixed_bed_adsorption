@@ -27,6 +27,7 @@ from pyomo.environ import (
     Set,
     Objective,
     Block,
+    SolverManagerFactory,
 )
 from pyomo.dae import ContinuousSet, DerivativeVar, Integral
 from idaes import *
@@ -2867,13 +2868,30 @@ def solve_model(blk, optarg=None):
     solver = SolverFactory("ipopt")
     if optarg == None:
         solver.options = {
-            "max_iter": 500,
+            "max_iter": 2000,
             "nlp_scaling_method": 'user-scaling',
             "warm_start_init_point": "yes",
             "bound_push": 1e-22,
             "halt_on_ampl_error": "yes",
-            "tol": 1e-4
+            "tol": 1e-6
         }
     else:
         solver.options = optarg
-    solver.solve(blk, tee=True)
+    results = solver.solve(blk, tee=True)
+    
+    return results
+
+def NEOS_solver(blk):
+    
+    solver_manager = SolverManagerFactory('neos')
+    results = solver_manager.solve(
+        blk,
+        tee=True,
+        # keedfiles=True,
+        solver="conopt",
+        # tmpdir="temp",
+        options={'outlev': 3,
+                'workfactor': 3,},
+        # add_options=["gams_model.optfile=1;"],
+    )
+    return results

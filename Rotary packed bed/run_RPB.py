@@ -4,6 +4,8 @@ from idaes.core.util import to_json, from_json
 import numpy as np
 import pyomo.environ as pyo
 
+
+
 def Remove_Pressure_Drop(b):
     # b.ads.R_dP.fix(0.001)
     # b.des.R_dP.fix(0.001)
@@ -21,7 +23,7 @@ if __name__ == '__main__':
     has_pressure_drop = True
     RPB = RPB_model.full_model_creation(lean_temp_connection=True,
                                         configuration='counter-current')
-    RPB_model.add_ads_inlet_comp_constraint(RPB.ads)
+    # RPB_model.add_ads_inlet_comp_constraint(RPB.ads)
     
 
     y_in = {'CO2': 0.002201,
@@ -54,11 +56,11 @@ if __name__ == '__main__':
     homotopy_points = np.linspace(0.2, 1, 5)
     # RPB_model.init_routine_1(RPB)#, homotopy_points)
 
-    from_json(RPB, fname="low_co2_initialization_no_dP.json.gz", gz=True)
+    from_json(RPB, fname="90_PCC_80_RPB.json.gz", gz=True)
     
 
     
-    RPB_model.solve_model(RPB,)# optarg={'max_iter': 0})
+    # RPB_model.solve_model(RPB,)# optarg={'max_iter': 0})
     Results = RPB_model.report(RPB)
     # Results_Inlet_Loading = RPB_model.report_loading(RPB)
     
