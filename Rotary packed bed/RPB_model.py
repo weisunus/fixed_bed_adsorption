@@ -2072,14 +2072,16 @@ def full_model_creation(lean_temp_connection=True, configuration="co-current", h
     @RPB.Constraint(RPB.des.z)
     def rich_loading_constraint(RPB, z):
         if 0 < z < 1:
-            return RPB.interface_scale * (RPB.des.qCO2[z, 0] - RPB.ads.qCO2[z, 1]) == 0
+            # return RPB.interface_scale * (RPB.des.qCO2[z, 0] - RPB.ads.qCO2[z, 1]) == 0
+            return (RPB.des.qCO2[z, 0] / RPB.ads.qCO2[z, 1]) - 1 == 0
         else:
             return Constraint.Skip
 
     @RPB.Constraint(RPB.des.z)
     def rich_temp_constraint(RPB, z):
         if 0 < z < 1:
-            return RPB.interface_scale * (RPB.des.Ts[z, 0] - RPB.ads.Ts[z, 1]) == 0
+            # return RPB.interface_scale * (RPB.des.Ts[z, 0] - RPB.ads.Ts[z, 1]) == 0
+            return (RPB.des.Ts[z, 0] / RPB.ads.Ts[z, 1]) - 1 == 0
         else:
             return Constraint.Skip
 
@@ -2095,7 +2097,8 @@ def full_model_creation(lean_temp_connection=True, configuration="co-current", h
     @RPB.Constraint(RPB.ads.z)
     def lean_loading_constraint(RPB, z):
         if 0 < z < 1:
-            return RPB.interface_scale * (RPB.ads.qCO2[z, 0] - RPB.des.qCO2[z, 1]) == 0
+            # return RPB.interface_scale * (RPB.ads.qCO2[z, 0] - RPB.des.qCO2[z, 1]) == 0
+            return (RPB.ads.qCO2[z, 0] / RPB.des.qCO2[z, 1]) - 1 == 0
         else:
             return Constraint.Skip
 
@@ -2104,7 +2107,8 @@ def full_model_creation(lean_temp_connection=True, configuration="co-current", h
         @RPB.Constraint(RPB.ads.z)
         def lean_temp_constraint(RPB, z):
             if 0 < z < 1:
-                return RPB.interface_scale * (RPB.ads.Ts[z, 0] - RPB.des.Ts[z, 1]) == 0
+                # return RPB.interface_scale * (RPB.ads.Ts[z, 0] - RPB.des.Ts[z, 1]) == 0
+                return (RPB.ads.Ts[z, 0] / RPB.des.Ts[z, 1]) - 1 == 0
             else:
                 return Constraint.Skip
 
@@ -2734,8 +2738,8 @@ def scale_model(m, gas_flow_direction, mode):
             iscale.set_scaling_factor(m.Tg[z, o], 1e-3)
             iscale.set_scaling_factor(m.Ts[z, o], 1e-2)
             iscale.set_scaling_factor(m.P[z, o], 10)
-            iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 25)
-            iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 25)
+            iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 1e-3)
+            iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1e3)
             iscale.set_scaling_factor(m.flux_eq["H2O", z, o], 1 / value(m.y_in["H2O"]))
             iscale.set_scaling_factor(m.Flux_kzo["H2O", z, o], 1 / value(m.y_in["H2O"]))
             iscale.set_scaling_factor(m.heat_flux_eq[z, o], 0.1)
@@ -2748,7 +2752,7 @@ def scale_model(m, gas_flow_direction, mode):
 
             if o == 0 or o == 1:
                 iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 1e1)
-                iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1e1)
+                iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1e3)
                 iscale.set_scaling_factor(m.flux_eq["H2O", z, o], 1e1)
                 iscale.set_scaling_factor(m.Flux_kzo["H2O", z, o], 1e1)
 
@@ -2767,7 +2771,7 @@ def scale_model(m, gas_flow_direction, mode):
                 iscale.set_scaling_factor(m.Q_delH[z, o], 0.01)
                 iscale.set_scaling_factor(m.Q_delH_eq[z, o], 0.01)
                 iscale.set_scaling_factor(m.Rs_CO2[z, o], 1e2)
-                iscale.set_scaling_factor(m.Rs_CO2_eq[z, o], 1)
+                iscale.set_scaling_factor(m.Rs_CO2_eq[z, o], 10)
 
             if gas_flow_direction == 1:
                 if z > 0:
@@ -2789,8 +2793,8 @@ def scale_model(m, gas_flow_direction, mode):
                 if z == 1:
                     iscale.set_scaling_factor(m.dFluxdz_disc_eq["CO2", z, o], 0.1)
                     iscale.set_scaling_factor(m.dFluxdz["CO2", z, o], 0.1)
-                    iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1)
-                    iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 1)
+                    iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1e3)
+                    iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 1e-3)
                     iscale.set_scaling_factor(m.Flux_kzo["H2O", z, o], 1)
                     iscale.set_scaling_factor(m.flux_eq["H2O", z, o], 1)
 
@@ -2814,8 +2818,8 @@ def scale_model(m, gas_flow_direction, mode):
                 if z == 0:
                     iscale.set_scaling_factor(m.dFluxdz_disc_eq["CO2", z, o], 0.1)
                     iscale.set_scaling_factor(m.dFluxdz["CO2", z, o], 0.1)
-                    iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1)
-                    iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 1)
+                    iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1e3)
+                    iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 1e-3)
                     iscale.set_scaling_factor(m.Flux_kzo["H2O", z, o], 1)
                     iscale.set_scaling_factor(m.flux_eq["H2O", z, o], 1)
 
@@ -2846,8 +2850,8 @@ def scale_model(m, gas_flow_direction, mode):
                 iscale.set_scaling_factor(m.flux_eq["N2", z, o], 1e1)
                 iscale.set_scaling_factor(m.Flux_kzo["N2", z, o], 1e1)
                 iscale.set_scaling_factor(m.y["N2", z, o], 0.1 / value(m.y_in["N2"]))
-                iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 2.5)
-                iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 2.5)
+                iscale.set_scaling_factor(m.flux_eq["CO2", z, o], 1e3)
+                iscale.set_scaling_factor(m.Flux_kzo["CO2", z, o], 1e-3)
 
                 if o == 0 or o == 1:
                     iscale.set_scaling_factor(m.flux_eq["H2O", z, o], 1e-1)
@@ -2857,6 +2861,10 @@ def scale_model(m, gas_flow_direction, mode):
         for z in m.z:
             for o in m.o:
                 iscale.set_scaling_factor(m.y['CO2', z, o], 1000)
+                if z < 1:
+                    iscale.set_scaling_factor(m.dPdz_disc_eq[z, o], 1e4)
+                
+    return m
                 
 def add_ads_inlet_comp_constraint(m):
     @m.Constraint()
@@ -2877,7 +2885,8 @@ def solve_model(blk, optarg=None):
         }
     else:
         solver.options = optarg
-    results = solver.solve(blk, tee=True)
+    results = solver.solve(blk, tee=True, keepfiles=True,
+                           logfile = "name.csv",)
     
     return results
 
@@ -2886,12 +2895,15 @@ def NEOS_solver(blk):
     solver_manager = SolverManagerFactory('neos')
     results = solver_manager.solve(
         blk,
-        tee=True,
+        # tee=True,
         # keedfiles=True,
         solver="conopt",
         # tmpdir="temp",
-        options={'outlev': 3,
-                'workfactor': 3,},
+        options={
+                # 'outlev': 3,
+                'workfactor': 2,},
+        # logfile = "name.csv",
         # add_options=["gams_model.optfile=1;"],
     )
+    results.write()
     return results
