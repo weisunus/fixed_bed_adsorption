@@ -3,6 +3,7 @@ import pandas as pd
 from idaes.core.util import to_json, from_json
 import numpy as np
 import pyomo.environ as pyo
+import idaes.core.util.scaling as iscale
 
 
 
@@ -35,12 +36,32 @@ def set_polishing_bounds(sections):
                 section.C_tot.setub(250)
                 section.P[z,o].setub(10)
                 section.vel[z,o].setub(15)
+                
+def toggle_design_variables(blk, fix=False):
+    variable_list = [
+                     blk.ads.L,
+                     blk.ads.w_rpm,
+                     blk.ads.theta,
+                     blk.ads.Tx,
+                     blk.ads.P_in,
+                     blk.des.P_in,
+                     blk.des.P_out,
+                     blk.des.Tx,
+                     ]
+    if fix:
+        for v in variable_list:
+            v.fix()
+    else:
+        for v in variable_list:
+            v.unfix()
 
 if __name__ == '__main__':
     
     has_pressure_drop = True
     RPB = RPB_model.full_model_creation(lean_temp_connection=True,
                                         configuration='counter-current')
+    ads = RPB.ads
+    des = RPB.des
     # RPB_model.add_ads_inlet_comp_constraint(RPB.ads)
     
 
@@ -62,10 +83,10 @@ if __name__ == '__main__':
     # RPB.objective = pyo.Objective(expr=RPB.obj)
     
     # RPB.ads.P_in.bounds = (0.99, 1.5)
-    RPB.ads.P_in.setub(1.5)
+    RPB.ads.P_in.setub(1.75)
     RPB.ads.P_in.setlb(0.99)
     # RPB.ads.P.bounds = (0.99, 1.5)
-    RPB.ads.P.setub(1.5)
+    RPB.ads.P.setub(1.75)
     # RPB.ads.P.setlb(0.99)
     
     if not has_pressure_drop:
@@ -74,9 +95,23 @@ if __name__ == '__main__':
     homotopy_points = np.linspace(0.2, 1, 5)
     # RPB_model.init_routine_1(RPB)#, homotopy_points)
 
-    from_json(RPB, fname="90_PCC_80_RPB.json.gz", gz=True)
+    from_json(RPB, fname="json_files/95_PCC_99_RPB.json.gz", gz=True)
     
-
+    RPB.ads = RPB_model.scale_model(RPB.ads, gas_flow_direction=1, mode='adsorption')
+    # for z in RPB.des.z:
+    #     for o in RPB.des.o:
+    #         iscale.constraint_scaling_transform(RPB.des.Q_delH_eq[z,o], 1e-3)
+    #         iscale.constraint_scaling_transform(RPB.ads.Q_delH_eq[z,o], 1e-2)
+    #         iscale.constraint_scaling_transform(RPB.ads.heat_flux_eq[z,o], 1e-3)
+    #         iscale.constraint_scaling_transform(RPB.des.Rs_CO2_eq[z,o], 1e-2)
+    #         iscale.constraint_scaling_transform(RPB.ads.Rs_CO2_eq[z,o], 1e-2)
+    #         iscale.constraint_scaling_transform(RPB.des.constr_MTcont[z, o], 1e-2)
+    #         if z < 1:
+    #             iscale.set_scaling_factor(RPB.des.dPdz[z, o], 1e3)
+    #             iscale.constraint_scaling_transform(RPB.des.dPdz_disc_eq[z, o], 1e-4)
+    #             iscale.constraint_scaling_transform(RPB.des.pde_gasEB[z,o], 1e-1)
+    #         if z > 0:
+    #             iscale.constraint_scaling_transform(RPB.ads.pde_gasEB[z,o], 1e-1)
     
     # RPB_model.solve_model(RPB,)# optarg={'max_iter': 0})
     Results = RPB_model.report(RPB)
