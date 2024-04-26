@@ -383,7 +383,7 @@ def RPB_model(mode, gas_flow_direction=1, has_pressure_drop=True):
     m.dPdz = DerivativeVar(
         m.P,
         wrt=m.z,
-        bounds=(-1, 1),
+        bounds=(-3, 3),
         units=units.bar,
         doc="axial derivative of pressure [bar/dimensionless bed length]",
     )
@@ -2907,3 +2907,48 @@ def NEOS_solver(blk):
     )
     results.write()
     return results
+
+def custom_init(blk):
+    con_var_list = (
+        ('heat_flux_eq', 'heat_flux'),
+    	# ('C_tot_eq', 'C_tot'),
+    	('Flow_z_eq', 'Flow_z'),
+    	('y_kz_eq', 'y_kz'),
+    	('Rs_CO2_eq', 'Rs_CO2'),
+    	('constr_MTcont', 'Cs_r'),
+    	('Q_gs_eq', 'Q_gs'),
+    	('Q_ghx_eq', 'Q_ghx'),
+    	('Q_delH_eq', 'Q_delH'),
+    	# ('pde_gasMB', 'dFluxdz'),
+    	 # ('flux_eq', 'Flux_kzo'),
+    	# ('pde_solidMB', 'dqCO2do'),
+    	# ('pde_gasEB', 'dheat_fluxdz'),
+    	# ('pde_solidEB', 'dTsdo'),
+    	# ('pde_Ergun', 'dPdz'),
+    	#('mole_frac_sum', 'y'),
+    )
+    
+    for c, v in con_var_list:
+        getattr(blk.ads, c).deactivate()
+        # print(c, degrees_of_freedom(blk))
+        getattr(blk.ads, v).fix()
+        getattr(blk.des, c).deactivate()
+        getattr(blk.des, v).fix()
+        # print(v, degrees_of_freedom(blk))
+    
+    # print(degrees_of_freedom(blk))
+    assert degrees_of_freedom(blk) == 0
+    
+    NEOS_solver(blk)
+    
+    for c, v in con_var_list:
+        getattr(blk.ads, c).activate()
+        # print(c, degrees_of_freedom(blk))
+        getattr(blk.ads, v).unfix()
+        getattr(blk.des, c).activate()
+        getattr(blk.des, v).unfix()
+        
+        print(c,v)
+        assert degrees_of_freedom(blk) == 0
+        NEOS_solver(blk)
+        

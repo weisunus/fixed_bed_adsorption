@@ -4,6 +4,7 @@ from idaes.core.util import to_json, from_json
 import numpy as np
 import pyomo.environ as pyo
 import idaes.core.util.scaling as iscale
+import scaling_methods as sm
 
 
 
@@ -95,9 +96,10 @@ if __name__ == '__main__':
     homotopy_points = np.linspace(0.2, 1, 5)
     # RPB_model.init_routine_1(RPB)#, homotopy_points)
 
-    from_json(RPB, fname="json_files/95_PCC_99_RPB.json.gz", gz=True)
+    # from_json(RPB, fname="opt solution 012424.json.gz", gz=True)
+    from_json(RPB, fname="json_files/high_co2/cap_85.json.gz", gz=True)
     
-    RPB.ads = RPB_model.scale_model(RPB.ads, gas_flow_direction=1, mode='adsorption')
+    # RPB.ads = RPB_model.scale_model(RPB.ads, gas_flow_direction=1, mode='adsorption')
     # for z in RPB.des.z:
     #     for o in RPB.des.o:
     #         iscale.constraint_scaling_transform(RPB.des.Q_delH_eq[z,o], 1e-3)
@@ -108,8 +110,8 @@ if __name__ == '__main__':
     #         iscale.constraint_scaling_transform(RPB.des.constr_MTcont[z, o], 1e-2)
     #         if z < 1:
     #             iscale.set_scaling_factor(RPB.des.dPdz[z, o], 1e3)
-    #             iscale.constraint_scaling_transform(RPB.des.dPdz_disc_eq[z, o], 1e-4)
-    #             iscale.constraint_scaling_transform(RPB.des.pde_gasEB[z,o], 1e-1)
+    #             iscale.constraint_scaling_transform(RPB.des.dPdz_disc_eq[z, o], 1e-5)
+    #             iscale.constraint_scaling_transform(RPB.des.pde_gasEB[z,o], 1e-3)
     #         if z > 0:
     #             iscale.constraint_scaling_transform(RPB.ads.pde_gasEB[z,o], 1e-1)
     
